@@ -25,7 +25,7 @@ Windows 后台应用，每隔指定秒数播放静音音频，保持蓝牙音响
 
 ### 方式1：直接下载exe
 
-从 [Releases 页面](https://github.com/Gvshow/BT-Keeper/releases) 下载 `蓝牙音响保持.exe`，双击运行即可。
+从 [Releases 页面](https://github.com/Gvshow/BT-Keeper/releases) 下载 `BT-Keeper_v1.0.zip`，解压后双击 `蓝牙音响保持.exe` 即可运行。
 
 ### 方式2：从源码运行
 
