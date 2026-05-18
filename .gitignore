@@ -1,0 +1,14 @@
+# 构建
+build_simple/
+release_simple/
+__pycache__/
+*.pyc
+*.spec
+
+# 日志和配置（运行后自动生成）
+bluetooth_keepalive.log
+config.json
+
+# 系统
+.DS_Store
+Thumbs.db
