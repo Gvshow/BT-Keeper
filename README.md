@@ -1,4 +1,4 @@
-# 蓝牙音箱保活 🎵
+# BT-Keeper (蓝牙音箱保活) 🎵
 
 Windows 后台应用，每隔指定秒数播放静音音频，保持蓝牙音响连接不断开。
 
@@ -25,7 +25,7 @@ Windows 后台应用，每隔指定秒数播放静音音频，保持蓝牙音响
 
 ### 方式1：直接下载exe
 
-从 [Releases 页面](https://github.com/Gvshow/-/releases) 下载 `蓝牙音响保持.exe`，双击运行即可。
+从 [Releases 页面](https://github.com/Gvshow/BT-Keeper/releases) 下载 `蓝牙音响保持.exe`，双击运行即可。
 
 ### 方式2：从源码运行
 
