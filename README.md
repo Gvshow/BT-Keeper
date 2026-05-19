@@ -30,10 +30,7 @@ Windows 后台应用，每隔指定秒数播放静音音频，保持蓝牙音响
 ### 方式2：从源码运行
 
 ```bash
-# 1. 安装依赖
-pip install pystray pillow
-
-# 2. 运行
+# 无需安装任何依赖，直接运行（使用 Windows 原生 API）
 python bluetooth_keepalive_simple.py
 ```
 
@@ -78,10 +75,10 @@ python bluetooth_keepalive_simple.py
 ## 技术栈
 
 - Python 3
-- pystray（系统托盘）
-- winsound（音频播放）
-- ctypes（Windows原生对话框）
-- PyInstaller（打包exe）
+- Windows原生API（系统托盘、对话框）
+- winmm（底层音频播放）
+- ctypes（Windows API调用）
+- 零第三方依赖
 
 ## 项目结构
 
