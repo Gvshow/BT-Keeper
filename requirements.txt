@@ -1,2 +1,1 @@
-pystray>=0.19.5
-Pillow>=10.0.0
+# 无需第三方依赖，所有功能使用 Windows 原生 API（ctypes）
