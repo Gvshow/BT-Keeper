@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BT-Keeper · 蓝牙音箱保活</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: #1a1a2e;
+            background: #f8f9fe;
+            line-height: 1.6;
+        }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== Nav ===== */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        nav .logo {
+            font-weight: 700; font-size: 1.15rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        nav .logo .badge {
+            font-size: 0.65rem; font-weight: 600;
+            background: #2563eb; color: #fff;
+            padding: 2px 8px; border-radius: 99px;
+        }
+        nav .links { display: flex; gap: 1.5rem; font-size: 0.9rem; }
+        nav .links a { color: #4b5563; }
+
+        /* ===== Hero ===== */
+        .hero {
+            padding: 140px 2rem 80px;
+            max-width: 960px; margin: 0 auto;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 span { color: #2563eb; }
+        .hero .sub {
+            margin-top: 1rem;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: #6b7280;
+            max-width: 600px; margin-inline: auto;
+        }
+        .hero .tagline {
+            margin-top: 2rem;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #eef2ff; color: #2563eb;
+            font-weight: 600; font-size: 0.9rem;
+            padding: 0.4rem 1.2rem; border-radius: 99px;
+        }
+        .hero .cta {
+            margin-top: 2.5rem;
+            display: flex; gap: 1rem; justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 2rem; border-radius: 99px;
+            font-weight: 600; font-size: 1rem;
+            transition: transform .15s, box-shadow .15s;
+            cursor: pointer;
+        }
+        .btn:hover { transform: translateY(-2px); text-decoration: none; }
+        .btn-primary {
+            background: #2563eb; color: #fff;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 6px 24px rgba(37,99,235,0.4); }
+        .btn-outline {
+            border: 2px solid #d1d5db; color: #374151;
+            background: #fff;
+        }
+        .btn-outline:hover { border-color: #9ca3af; }
+
+        /* ===== Problem / Solution ===== */
+        .banner {
+            max-width: 960px; margin: 0 auto; padding: 3rem 2rem;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;
+        }
+        .banner-card {
+            background: #fff; border-radius: 16px; padding: 2rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .banner-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .banner-card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
+        .banner-card p { color: #6b7280; font-size: 0.95rem; }
+        .banner-card.problem { border-left: 4px solid #ef4444; }
+        .banner-card.solution { border-left: 4px solid #22c55e; }
+
+        /* ===== Features ===== */
+        .features {
+            max-width: 960px; margin: 0 auto; padding: 4rem 2rem;
+        }
+        .features h2 {
+            text-align: center; font-size: 1.75rem; font-weight: 700;
+            margin-bottom: 2.5rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+        .feature-card {
+            background: #fff; border-radius: 14px; padding: 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: box-shadow .2s;
+        }
+        .feature-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .feature-card .emoji { font-size: 1.6rem; margin-bottom: 0.6rem; }
+        .feature-card h4 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+        .feature-card p { font-size: 0.9rem; color: #6b7280; }
+
+        /* ===== How It Works ===== */
+        .how {
+            max-width: 960px; margin: 0 auto; padding: 4rem 2rem;
+        }
+        .how h2 {
+            text-align: center; font-size: 1.75rem; font-weight: 700;
+            margin-bottom: 2.5rem;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            counter-reset: step;
+        }
+        .step {
+            background: #fff; border-radius: 14px; padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            position: relative;
+        }
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%);
+            background: #2563eb; color: #fff;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+        }
+        .step .icon { font-size: 2rem; margin: 0.5rem 0 0.6rem; }
+        .step h4 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .step p { font-size: 0.88rem; color: #6b7280; }
+
+        /* ===== Usage ===== */
+        .usage {
+            max-width: 960px; margin: 0 auto; padding: 4rem 2rem;
+        }
+        .usage h2 {
+            text-align: center; font-size: 1.75rem; font-weight: 700;
+            margin-bottom: 2.5rem;
+        }
+        .usage-steps {
+            background: #fff; border-radius: 16px; padding: 2rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .usage-steps ol {
+            padding-left: 1.2rem;
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        .usage-steps li { font-size: 0.95rem; color: #374151; }
+        .usage-steps li strong { color: #1a1a2e; }
+        .menu-box {
+            margin-top: 1.5rem;
+            background: #f3f4f6; border-radius: 12px; padding: 1.25rem;
+        }
+        .menu-box p { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem; }
+        .menu-box .items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+        }
+        .menu-box .items span {
+            background: #fff; border-radius: 8px; padding: 0.4rem 0.8rem;
+            font-size: 0.85rem; border: 1px solid #e5e7eb;
+        }
+
+        /* ===== Download ===== */
+        .download {
+            max-width: 960px; margin: 0 auto; padding: 4rem 2rem;
+            text-align: center;
+        }
+        .download h2 {
+            font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem;
+        }
+        .download .sub {
+            color: #6b7280; margin-bottom: 2rem;
+        }
+        .download-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            text-align: left;
+        }
+        .download-card {
+            background: #fff; border-radius: 16px; padding: 1.75rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f0;
+        }
+        .download-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .download-card h4 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+        .download-card p { font-size: 0.88rem; color: #6b7280; margin-bottom: 1rem; }
+        .download-card .btn { font-size: 0.9rem; padding: 0.5rem 1.5rem; }
+
+        /* ===== Footer ===== */
+        footer {
+            text-align: center; padding: 3rem 2rem;
+            color: #9ca3af; font-size: 0.85rem;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 2rem;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 640px) {
+            .banner { grid-template-columns: 1fr; }
+            nav .links { display: none; }
+            .hero { padding-top: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Nav ===== -->
+<nav>
+    <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8a7 7 0 0 1 14 0c0 6-3.5 10-7 12-3.5-2-7-6-7-12z"/><circle cx="12" cy="8" r="2"/></svg>
+        BT-Keeper <span class="badge">v1.0</span>
+    </div>
+    <div class="links">
+        <a href="#features">功能</a>
+        <a href="#how">原理</a>
+        <a href="#usage">使用</a>
+        <a href="#download">下载</a>
+    </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+    <div class="tagline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        全程无声 · 后台运行 · 即下即用
+    </div>
+    <h1>蓝牙音响 <span>不再断开</span></h1>
+    <p class="sub">
+        Windows 后台应用，每隔指定秒数播放静音音频，保持蓝牙音响连接不断开。<br>
+        彻底告别"暂停一会儿就断连"的烦恼。
+    </p>
+    <div class="cta">
+        <a href="#download" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            免费下载
+        </a>
+        <a href="https://github.com/Gvshow/BT-Keeper" target="_blank" class="btn btn-outline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+            GitHub 源码
+        </a>
+    </div>
+</section>
+
+<!-- ===== Problem / Solution ===== -->
+<div class="banner">
+    <div class="banner-card problem">
+        <div class="icon">&#x1F50A;</div>
+        <h3>痛点问题</h3>
+        <p>蓝牙音响在暂停播放后，系统会在几十秒后自动断开连接。每次听歌、看视频中途停顿一下，音响就断了，需要重新手动连接，非常麻烦。</p>
+    </div>
+    <div class="banner-card solution">
+        <div class="icon">&#x2728;</div>
+        <h3>解决方案</h3>
+        <p>程序在系统托盘后台运行，每隔 30 秒播放一次极短静音音频，让蓝牙音响保持"活跃"状态，系统就不会自动断开连接。<strong>全程无声</strong>，不会打扰你。</p>
+    </div>
+</div>
+
+<!-- ===== Features ===== -->
+<section class="features" id="features">
+    <h2>功能特点</h2>
+    <div class="grid">
+        <div class="feature-card">
+            <div class="emoji">&#x1F4BB;</div>
+            <h4>系统托盘运行</h4>
+            <p>最小化到托盘，不占任务栏，后台静默运行，完全无感。</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji">&#x1F504;</div>
+            <h4>自动保持连接</h4>
+            <p>每 30 秒自动触发一次静音音频，蓝牙音响持续活跃。</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji">&#x26A1;</div>
+            <h4>开机自启</h4>
+            <p>右键菜单一键设置开机自动运行，一劳永逸。</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji">&#x2699;&#xFE0F;</div>
+            <h4>自定义间隔</h4>
+            <p>自由调节播放间隔（5~120秒），适应不同蓝牙设备。</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji">&#x1F5A5;&#xFE0F;</div>
+            <h4>原生对话框</h4>
+            <p>使用 Windows 原生 API，稳定可靠，无事件循环冲突。</p>
+        </div>
+        <div class="feature-card">
+            <div class="emoji">&#x1F4E6;</div>
+            <h4>独立 exe</h4>
+            <p>无需安装 Python 环境，下载解压后双击即用。</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== How It Works ===== -->
+<section class="how" id="how">
+    <h2>工作原理</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="icon">&#x23F0;</div>
+            <h4>定时触发</h4>
+            <p>启动计时器，每 N 秒触发一次保活信号</p>
+        </div>
+        <div class="step">
+            <div class="icon">&#x1F507;</div>
+            <h4>静音播放</h4>
+            <p>播放极短静音 WAV 音频（约 0.15 秒）</p>
+        </div>
+        <div class="step">
+            <div class="icon">&#x1F9D0;</div>
+            <h4>设备激活</h4>
+            <p>蓝牙音响被激活，保持连接活跃状态</p>
+        </div>
+        <div class="step">
+            <div class="icon">&#x2705;</div>
+            <h4>防止断连</h4>
+            <p>系统判定设备"活跃中"，不会自动断开</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Usage ===== -->
+<section class="usage" id="usage">
+    <h2>使用方法</h2>
+    <div class="usage-steps">
+        <ol>
+            <li><strong>下载</strong> &mdash; 从下方下载 ZIP 压缩包</li>
+            <li><strong>解压</strong> &mdash; 解压到任意文件夹</li>
+            <li><strong>运行</strong> &mdash; 双击 <code>蓝牙音响保持.exe</code></li>
+            <li><strong>托盘</strong> &mdash; 程序自动最小化到系统托盘（右下角）</li>
+        </ol>
+        <div class="menu-box">
+            <p>&#x1F5F3;&#xFE0F; 右键点击托盘喇叭图标，打开菜单：</p>
+            <div class="items">
+                <span>&#x1F4CA; 服务状态</span>
+                <span>&#x2699;&#xFE0F; 设置间隔</span>
+                <span>&#x26A1; 开机自启</span>
+                <span>&#x1F4DD; 查看日志</span>
+                <span>&#x1F6AA; 退出</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Download ===== -->
+<section class="download" id="download">
+    <h2>下载</h2>
+    <p class="sub">完全免费，下载解压后即可使用 &#x1F447;</p>
+    <div class="download-cards">
+        <div class="download-card">
+            <div class="icon">&#x1F4E6;</div>
+            <h4>&#x84DD;&#x7259;&#x97F3;&#x54CD;&#x4FDD;&#x6301; v1.0</h4>
+            <p>Windows 版本，含独立 exe，无需安装环境</p>
+            <a href="https://github.com/Gvshow/BT-Keeper/releases/tag/v1.0.0" target="_blank" class="btn btn-primary">下载 ZIP</a>
+        </div>
+        <div class="download-card">
+            <div class="icon">&#x1F4BB;</div>
+            <h4>GitHub 源码</h4>
+            <p>开源项目，Python 编写，欢迎 Star &amp; Fork</p>
+            <a href="https://github.com/Gvshow/BT-Keeper" target="_blank" class="btn btn-outline">查看源码</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+    <p>BT-Keeper &mdash; 蓝牙音箱保活 &nbsp;|&nbsp; MIT License &nbsp;|&nbsp; Made with &#x2764;&#xFE0F;</p>
+</footer>
+
+</body>
+</html>
